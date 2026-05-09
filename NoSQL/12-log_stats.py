@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
-""" Where can I learn Python? """
-import pymongo
+"""Provides stats about Nginx logs stored in MongoDB"""
+from pymongo import MongoClient
 
 
-def schools_by_topic(mongo_collection, topic: str):
-    """ Search the school based in school
+def log_stats():
+    """Display stats about Nginx logs in MongoDB"""
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    collection = client.logs.nginx
 
-        Args:
-            mongo_collection: Collection
-            topic: Content
+    total = collection.count_documents({})
+    print(f"{total} logs")
 
-        Return:
-            List of school
-    """
-    query: dict = {"topics": topic}
-    schools: list = []
+    print("Methods:")
+    for method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
+        count = collection.count_documents({"method": method})
+        print(f"\tmethod {method}: {count}")
 
-    for school in mongo_collection.find(query):
-        schools.append(school)
+    status_count = collection.count_documents({"method": "GET", "path": "/status"})
+    print(f"{status_count} status check")
 
-    return schools
+
+if __name__ == "__main__":
+    log_stats()
