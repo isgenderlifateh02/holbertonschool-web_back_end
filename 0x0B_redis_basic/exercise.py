@@ -2,25 +2,29 @@ def replay(method):
     """
     Displays the history of calls of a particular function.
     """
-    # Redis obyektinə metod vasitəsilə çatırıq
-    self_redis = method.__self__._redis
-    method_name = method.__qualname__
+    import redis
+    # Metodun aid olduğu klassın daxilindəki redis instansiyasına çatırıq
+    r = method.__self__._redis
+    # Metodun tam adını alırıq (məsələn: Cache.store)
+    m_name = method.__qualname__
     
-    # Giriş və çıxış açarlarını tapırıq
-    inputs_key = "{}:inputs".format(method_name)
-    outputs_key = "{}:outputs".format(method_name)
+    # Açar adlarını müəyyən edirik
+    in_key = "{}:inputs".format(m_name)
+    out_key = "{}:outputs".format(m_name)
     
-    # Redis-dən bütün tarixçəni çəkirik
-    inputs = self_redis.lrange(inputs_key, 0, -1)
-    outputs = self_redis.lrange(outputs_key, 0, -1)
+    # Məlumatları Redis-dən çəkirik
+    inputs = r.lrange(in_key, 0, -1)
+    outputs = r.lrange(out_key, 0, -1)
     
-    # Neçə dəfə çağırıldığını çap edirik
-    print("{} was called {} times:".format(method_name, len(inputs)))
+    # İlk sətri çap edirik
+    print("{} was called {} times:".format(m_name, len(inputs)))
     
-    # inputs və outputs üzərində eyni anda dövr edirik
+    # zip ilə hər iki siyahını eyni anda oxuyuruq
     for inp, out in zip(inputs, outputs):
-        # Redis-dən gələn byte-ları decode edirik
-        input_str = inp.decode("utf-8")
-        output_str = out.decode("utf-8")
-        
-        print("{}(*({})) -> {}".format(method_name, input_str, output_str))
+        # Redis-dən gələn məlumatlar byte formatındadır, decode edirik
+        # Input artıq "('foo',)" kimi string formatında yadda saxlanılıb
+        print("{}(*({})) -> {}".format(
+            m_name,
+            inp.decode("utf-8"),
+            out.decode("utf-8")
+        ))
