@@ -9,23 +9,22 @@ def log_stats():
     """
     Displays stats about Nginx logs.
     """
-    # MongoDB-yə qoşuluruq
     client = MongoClient('mongodb://127.0.0.1:27017')
-    # logs database-ni və nginx collection-u seçirik
     nginx_collection = client.logs.nginx
 
-    # 1. Ümumi loq sayını tapırıq
+    # 1. Ümumi loq sayı
     total_logs = nginx_collection.count_documents({})
     print(f"{total_logs} logs")
 
-    # 2. Metodlar üzrə statistika
+    # 2. Metodlar
     print("Methods:")
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
     for method in methods:
         count = nginx_collection.count_documents({"method": method})
-        print(f"\tmethod {method}: {count}")
+        # Burada tam olaraq 4 boşluq (və ya \t) olmalıdır
+        print(f"    method {method}: {count}")
 
-    # 3. Status check (method=GET, path=/status) sayını tapırıq
+    # 3. Status check
     status_check = nginx_collection.count_documents(
         {"method": "GET", "path": "/status"}
     )
